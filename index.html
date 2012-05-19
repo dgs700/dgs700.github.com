@@ -9,164 +9,46 @@ body{font-family: Geneva,Arial,Helvetica,sans-serif;}
 </head>
 
 <body>
-<p>backbone.configurator<br />
-    =====================</p>
-<p>/* (C) 2012, David Shapiro - portions added to existing Backbone code */</p>
-<p>Backbone.Configurator (Backbone.Config) is an extensible object-class that allows you to manage your Backbone.js configuration(s) by moving any and all hardcoded string dependancies from your Backbone classes and<br />
-    manage them in a hierarchical object wrapped with the usual getter and setter functions, plus Backbone.Events, plus more.  The best analogy is with Backbone.Collection.<br />
-    You use a Collection object to manage a list of Model instances.  You use Backbone.Config to manage an object hierarchy that consists of all your application's config<br />
-    information organized however you see fit.  The ideal use-case is in any situation where your Backbone object-classes need the flexibility to go beyond a single page app<br />
-    and mutate to handle different presentation contexts, data sets, etc. It is designed to have the minimalist functionality<br />
-    of typical configuration classes seen in server-side MVC frameworks with Backbone.Events and Backbone inheritance style<br />
-    mixed in.</p>
-<p>If your Backbone classes need the flexibility to handle more than one presentation context, your should be using something to abstract and manage the context dependancies.<br />
-    Afterall, embedded string dependancies in your Backbone.js code such as templateId:&quot;theIDinMyHTML&quot; or className:&quot;cssClassString&quot;<br />
-    is tantamount to embedding inline event handlers in your html: &lt;a onclick=&quot;alert('clicked');return false&quot;&gt;</p>
-<p>## Benefits</p>
-<p>* Maintain Backbone MVC classes free of hardcoded dependancies including strings, css, text, html fragments, routes, mappings, urls, jQuery selectors, class names, switches, <br />
-    default data attributes, etc. <br />
-    * Application configurations can be extended, instantiated, modified or reset at runtime. Instantiate your config object and inject into your app.<br />
-    * Prototype inheritance, and object instantiation is the same style as Backbone.js except for the managed Config object which is not overridden, but <br />
-    jQuery deep-extended along the inheritance chain allowing for cascading configurations.<br />
-    * Modify configurations and trigger config:changed events during runtime to dynamically decorate your app. Your other Backbone objects (views, models, routers)<br />
-    can listen for config events and react accordingly. I.E. View.on(config:change, @render) -&gt; Config.set({templateId:'#newTemplate'}) -&gt; triggers config:change<br />
-    * Ideal for situations where your Backbone views (controllers) and routers need the flexibility to handle different templating and rendering situations<br />
-    depending on different display contexts.<br />
-    * You can override the utility functions (or add to) with those more suited to your needs. As with the rest of Backbone, the functionality is the minimal necessary.<br />
-    * A suggested, skeletal config object is included which you can extend or overwrite with your own.</p>
-<p>## API: ##</p>
-<p>**Config.extend({settings}, {protoProps, {classProps})**<br />
-    subclass a Config with optional settings object included before the usual Backbone.extend options</p>
-<p> var SubConfig = Config.extend({<br />
-    test:{<br />
-    foo:'bar'<br />
-    }<br />
-    });</p>
-<p>**new Config({settings}, {options:{fresh:true|false}})**<br />
-    instantiate a new config instance with optional settings object listed before the Backbone options object. <br />
-    Include {fresh:true} in the options to disclude any inherited config settings.</p>
-<p> var myConf = new SubConfig({<br />
-    test:{<br />
-    bar:'baz'<br />
-    }<br />
-    })</p>
-<p> myConf.config = {<br />
-    test:{<br />
-    foo:'bar',<br />
-    bar:'baz'<br />
-    }<br />
-    }</p>
-<p>**.get('prop', [true])**<br />
-    return the value for a property string. This implementation does a breadth search of the first 2 levels only for minimalist performance <br />
-    reasons. Including true as the second arg will wrap the returned value in a new Config instance. This can be overridden for more complex searching, hashing, <br />
-    flattening, etc. </p>
-<p> myConf.get('foo') // 'bar'<br />
-    <br />
-    myConf.get('test', true).get('bar') // 'baz'</p>
-<p>**.set({settings}, [loud:true], 'event_string']])**<br />
-    deep copies new settings into the Config instance. If loud:true, a generic change:config event is triggered. <br />
-    An optional custom event string can be passed in.   Other Backbone objects can bind listeners in the usual way.</p>
-<p> myConf.set({<br />
-    test:{<br />
-    another:{propHash}<br />
-    }<br />
-    })</p>
-<p> myConf.get('test') // {<br />
-    foo:'bar',<br />
-    bar:'baz',<br />
-    another:{propHash}<br />
-    }</p>
-<p>**.has('property')**<br />
-    determine if property exists (not yet implemented)</p>
-<p> myApp = new Backbone.Router(myConf);</p>
-<p>Sample, suggested skeletal configuration for basic Backbone modules. The idea is to use this as a filing system for dependancies<br />
-    in whatever logical groupings make sense for your site.<br />
-    You can extend this object or set your own via Backbone.Configurator.config = {your base config} prior to extending your own<br />
-    Configurator classes.<br />
-    <br />
-    config = {<br />
-    //<br />
-    app: {<br />
-    bootStrapData: null,<br />
-    pager:false,<br />
-    filter:false,<br />
-    //css strings<br />
-    css: {},<br />
-    // jQuery selector strings<br />
-    selectors: {<br />
-    domAttachClass: '', <br />
-    rootPageElem: 'body'<br />
-    },<br />
-    // avoid confusion with css classnames<br />
-    klassNames: {} <br />
-    },<br />
-    router: {<br />
-    routes:{<br />
-    '': 'index'<br />
-    },<br />
-    //reverse hash of routes for use with router.navigate()<br />
-    paths:{<br />
-    index: ''<br />
-    }<br />
-    },<br />
-    item: {<br />
-    urlRoot: '/'<br />
-    },<br />
-    itemView: {<br />
-    tagName: 'article',<br />
-    className: null,<br />
-    id: null,<br />
-    templateId: null,<br />
-    css: {},<br />
-    // event key strings for your events hash<br />
-    events: {},<br />
-    // html strings too short to be worth templating<br />
-    html: {},<br />
-    selectors: {},<br />
-    // text strings<br />
-    text: {}<br />
-    },<br />
-    collection: {<br />
-    url: '/'<br />
-    },<br />
-    collectionView: {<br />
-    tagName: 'section',<br />
-    className: null,<br />
-    id: null,<br />
-    templateId: null,<br />
-    itemView: null,<br />
-    css: {},<br />
-    events: {},<br />
-    html: {},<br />
-    selectors: {},<br />
-    text: {}<br />
-    },<br />
-    history: {<br />
-    root: '/',<br />
-    pushState: true<br />
-    }<br />
-    };<br />
-    <br />
-    Configurator.config = config;</p>
-<p>** Example usage coming soon</p>
-<pre>
-Backbone.Configurator (Backbone.Config) is an extensible object-class that allows you to manage your Backbone.js configuration(s) by moving any and all hardcoded string dependancies from your Backbone classes and manage them in a hierarchical object wrapped with the usual getter and setter functions, plus Backbone.Events, plus more. The best analogy is with Backbone.Collection. You use a Collection object to manage a list of Model instances. You use Backbone.Config to manage an object hierarchy that consists of all your application's config information organized however you see fit. The ideal use-case is in any situation where your Backbone object-classes need the flexibility to go beyond a single page app and mutate to handle different presentation contexts, data sets, etc. It is designed to have the minimalist functionality of typical configuration classes seen in server-side MVC frameworks with Backbone.Events and Backbone inheritance style mixed in.
+<h1>backbone.configurator</h1>
 
-If your Backbone classes need the flexibility to handle more than one presentation context, your should be using something to abstract and manage the context dependancies. Afterall, embedded string dependancies in your Backbone.js code such as templateId:"theIDinMyHTML" or className:"cssClassString" is tantamount to embedding inline event handlers in your html:
+/* (C) 2012, David Shapiro - portions added to existing Backbone code */
+<pre>
+Backbone.Configurator (Backbone.Config) 
+is an extensible object-class that allows you to manage your Backbone.js
+configuration(s) by moving any and all hardcoded string dependancies from your Backbone classes and manage them 
+in a hierarchical object wrapped with the usual getter and setter functions, plus Backbone.Events, plus more.
+The best analogy is with Backbone.Collection. You use a Collection object to manage a list of Model instances. 
+You use Backbone.Config to manage an object hierarchy that consists of all your application's config information 
+organized however you see fit. The ideal use-case is in any situation where your Backbone object-classes need the
+flexibility to go beyond a single page app and mutate to handle different presentation contexts, data sets, etc. 
+It is designed to have the minimalist functionality of typical configuration classes seen in server-side MVC
+frameworks with Backbone.Events and Backbone inheritance style mixed in.
+
+If your Backbone classes need the flexibility to handle more than one presentation context, your should be using 
+something to abstract and manage the context dependancies. Afterall, embedded string dependancies in your Backbone.js
+code such as templateId:"theIDinMyHTML" or className:"cssClassString" is tantamount to embedding inline event handlers
+in your html:
 Benefits
 
-    Maintain Backbone MVC classes free of hardcoded dependancies including strings, css, text, html fragments, routes, mappings, urls, jQuery selectors, class names, switches, default data attributes, etc.
-    Application configurations can be extended, instantiated, modified or reset at runtime. Instantiate your config object and inject into your app.
-    Prototype inheritance, and object instantiation is the same style as Backbone.js except for the managed Config object which is not overridden, but
+    Maintain Backbone MVC classes free of hardcoded dependancies including strings, css, text, html fragments, 
+    routes, mappings, urls, jQuery selectors, class names, switches, default data attributes, etc.
+    Application configurations can be extended, instantiated, modified or reset at runtime. Instantiate your config 
+    object and inject into your app.    Prototype inheritance, and object instantiation is the same style as 
+    Backbone.js except for the managed Config object which is not overridden, but
     jQuery deep-extended along the inheritance chain allowing for cascading configurations.
-    Modify configurations and trigger config:changed events during runtime to dynamically decorate your app. Your other Backbone objects (views, models, routers) can listen for config events and react accordingly. I.E. View.on(config:change, @render) -> Config.set({templateId:'#newTemplate'}) -> triggers config:change
-    Ideal for situations where your Backbone views (controllers) and routers need the flexibility to handle different templating and rendering situations depending on different display contexts.
-    You can override the utility functions (or add to) with those more suited to your needs. As with the rest of Backbone, the functionality is the minimal necessary.
+    Modify configurations and trigger config:changed events during runtime to dynamically decorate your app.
+    Your other Backbone objects (views, models, routers) can listen for config events and react accordingly.
+    I.E. View.on(config:change, @render) -> Config.set({templateId:'#newTemplate'}) -> triggers config:change
+    Ideal for situations where your Backbone views (controllers) and routers need the flexibility to handle
+    different templating and rendering situations depending on different display contexts.
+    You can override the utility functions (or add to) with those more suited to your needs. As with the 
+    rest of Backbone, the functionality is the minimal necessary.
     A suggested, skeletal config object is included which you can extend or overwrite with your own.
 
 API:
 
-Config.extend({settings}, {protoProps, {classProps}) subclass a Config with optional settings object included before the usual Backbone.extend options
+Config.extend({settings}, {protoProps, {classProps}) subclass a Config with optional settings object included 
+before the usual Backbone.extend options
 
 var SubConfig = Config.extend({
     test:{
@@ -174,7 +56,9 @@ var SubConfig = Config.extend({
     }
 });
 
-new Config({settings}, {options:{fresh:true|false}}) instantiate a new config instance with optional settings object listed before the Backbone options object. Include {fresh:true} in the options to disclude any inherited config settings.
+new Config({settings}, {options:{fresh:true|false}}) instantiate a new config instance with optional settings
+object listed before the Backbone options object. Include {fresh:true} in the options to disclude any inherited
+config settings.
 
 var myConf = new SubConfig({
     test:{
